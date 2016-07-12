@@ -1,6 +1,8 @@
 <html ng-app="listaTelefonica">
+	<meta charset="UTF-8">
 	<title>Lista Telefonica!</title>
 	<script src="js/angular.js"></script>
+	<script src="js/angular-messages.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.css"></link>
 	<style type="text/css">
 		.jumbotron {
@@ -13,7 +15,7 @@
 		}
 	</style>
 	<script>
-		angular.module("listaTelefonica", []);
+		angular.module("listaTelefonica", ["ngMessages"]);
 		angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope){
 			$scope.message = "Lista Telefonica";
 			$scope.contatos = [
@@ -32,6 +34,7 @@
 			$scope.adicionarContato = function(contato) {
 				$scope.contatos.push(angular.copy(contato));
 				delete $scope.contato;
+				$scope.contatoForm.$setPristine();
 			};
 			$scope.apagarContatos = function(contato) {
 				$scope.contatos = contato.filter(function (contato){
@@ -66,15 +69,26 @@
 			</tbody>
 		</table>
 		<hr>
-		<form>
-			<input class="form-control" type="text" ng-model="contato.nome" placeholder="Nome">
-			<input class="form-control" type="number" ng-model="contato.telefone" placeholder="Telefone">
+		{{contatoForm.$valid}}<br>
+		{{contatoForm.$invalid}}
+		<form name="contatoForm">
+			<input class="form-control" type="text" ng-model="contato.nome" name="nome" placeholder="Nome" ng-required="true">
+			<input class="form-control" type="number" ng-model="contato.telefone" name="telefone" placeholder="Telefone" ng-minlength="8" ng-pattern="/^\d{4,5}-\d{4}$/">
 			<select class="form-control" ng-model="contato.operadora" ng-options="operadora.nome group by operadora.tipo for operadora in operadoras">
 				<option value="">Slecione uma operadora</option>
 			</select>
-			<button ng-click="adicionarContato(contato)" class="btn btn-primary btn-block" type="button" ng-disabled="!contato.nome || !contato.telefone">Adicionar Contato </button>
-			<button ng-click="apagarContatos(contatos)" class="btn btn-danger btn-block" type="button"  ng-if="isContatoSelecionado(contatos)">Remover Contato</button>		</form>
-			{{contatos}}
+		</form>
+		<div ng-messages="contatoForm.$error">		
+			<div ng-message="required && contatoForm.nome.$dirty" class="alert alert-danger">	
+				<p>Por favor, preencha todas as informações!</p>
+			</div>
+		</div>
+		<div ng-show="contatoForm.telefone.$error.minlength || contatoForm.telefone.$error.pattern" class="alert alert-danger">
+			<p>O telefone deve ter no minimo 8 números!</p>
+		</div>
+		
+		<button ng-click="adicionarContato(contato)" class="btn btn-primary" type="button" ng-disabled="contatoForm.$invalid">Adicionar Contato </button>
+		<button ng-click="apagarContatos(contatos)" class="btn btn-danger " type="button"  ng-if="isContatoSelecionado(contatos)">Remover Contato</button>
 	</div>
 
 	
